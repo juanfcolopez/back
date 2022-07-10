@@ -1,7 +1,6 @@
-
-
 from flask import jsonify, Blueprint, request
 from db.data import db
+from aux.dates_validator import end_date_formatter, start_date_formatter, date_formatter
 import datetime
 cash_amount_bp = Blueprint('routes-cash_amount', __name__)
 
@@ -9,10 +8,8 @@ cash_amount_bp = Blueprint('routes-cash_amount', __name__)
 def amount_by_date(start, end):
     date_data = {}
     data = []
-    start = start + ' 00:00:00'
-    end = end + ' 23:59:59'
-    start = datetime.datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
-    end = datetime.datetime.strptime(end, "%Y-%m-%d %H:%M:%S")
+    start = start_date_formatter(start)
+    end = end_date_formatter(end)
     days = []
     if (start < end):
       delta = end - start
@@ -20,7 +17,7 @@ def amount_by_date(start, end):
     for day in days:
         date_data[day] = {'Total diario': 0}
     for receipt in db:
-        current_date = datetime.datetime.strptime(receipt['date_closed'], "%Y-%m-%d %H:%M:%S")
+        current_date = date_formatter(receipt['date_closed'])
         if start <= current_date <= end:
             date_data[current_date.strftime('%d-%m-%Y')]['Total diario'] += receipt['total']
     amount = []
